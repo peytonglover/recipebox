@@ -1,5 +1,6 @@
 <div>
 <h1>Recipes</h1>
+<h2>Am I authenticated?{{ request.user.is_authenticated }}</h2>
 <ul>
     {% for post in recipes %}
     <li>
@@ -7,6 +8,6 @@
     </li>
     {% endfor %}
 </ul>
-<a href="/new_recipe/">add new recipe</a>
-<a href="/new_author/">add new author</a>
+<a href="/addrecipe/">add new recipe</a>
+<a href="/addauthor/">add new author</a>
 </div>

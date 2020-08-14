@@ -1,6 +1,8 @@
 from django.shortcuts import render, HttpResponseRedirect, reverse
 from homepage.models import Recipe, Author
-from homepage.forms import RecipeForm, AuthorForm
+from homepage.forms import AddRecipeForm, AddAuthorForm, LoginForm
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 def simplelist(request):
@@ -16,9 +18,10 @@ def authordetail(request, author_name):
     my_author = Author.objects.filter(name=author_name).first()
     return render(request, 'authordetail.html', {"author": my_author, "recipes": recipes})
 
-def recipeform(request):
+@login_required
+def add_recipe(request):
     if request.method == "POST":
-        form = RecipeForm(request.POST)
+        form = AddRecipeForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
             Recipe.objects.create(
@@ -29,13 +32,30 @@ def recipeform(request):
                 instructions=data.get('instructions'),
             )
             return HttpResponseRedirect(reverse('homepage'))
-    form = RecipeForm()
+    form = AddRecipeForm()
     return render(request, 'forms.html', {'form': form})
 
-def authorform(request):
+@login_required
+def add_author(request):
     if request.method == "POST":
-        form = AuthorForm(request.POST)
+        form = AddAuthorForm(request.POST)
         form.save()
         return HttpResponseRedirect(reverse('homepage'))
-    form = AuthorForm()
+    form = AddAuthorForm()
     return render(request, 'forms.html', {'form': form})
+
+def loginform(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            user = authenticate(request, username=data.get('username'), password=data.get('password'))
+            if user:
+                login(request, user)
+                return HttpResponseRedirect(request.GET.get('next', reverse('homepage')))
+    form = LoginForm()
+    return render(request, 'forms.html', {'form': form})
+
+def logoutview(request):
+    logout(request)
+    return HttpResponseRedirect(reverse('homepage'))
